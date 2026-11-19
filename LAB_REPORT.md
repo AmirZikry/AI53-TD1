@@ -44,9 +44,17 @@ Training runs lack provenance manifests (Git SHA, dirty flag, package versions, 
     Missing pre-training data quality gate; corrupted images, wrong split counts, or missing classes are not caught before training
     </summary>
 </details>
+
 <details>
     <summary>
     data
 Transform data according to the needed shape before training. Avoiding missing data or unnormalized data in loaders     
+</summary>
+</details>
+
+<details>
+    <summary>
+    Engineering Checkpoint 2: Does random_state=42 guarantee bit-for-bit identical results on every CPU/GPU/software stack?
+    No because each stack have different levels of precision, so there might be a minor numerical difference at the least significant bit. 
 </summary>
 </details>
