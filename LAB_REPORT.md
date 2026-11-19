@@ -14,6 +14,20 @@
 
 <details>
     <summary>
+        uv-lock
+        All environments consume the same locked resolution, making the Python software stack reproducible across compatible environments    
+    </summary>
+</details>
+
+<details>
+    <summary>
+        .venv
+        Local virtual environment that keeps a project's packages and dependencies separate from the global Python installation  
+    </summary>
+</details>
+
+<details>
+    <summary>
     Reproducibility
     Missing seed generator which prevents the model from generating a repeatable result as before. Making it hard for testing multiple times.
     </summary>
