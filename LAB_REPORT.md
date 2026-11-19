@@ -54,7 +54,27 @@ Transform data according to the needed shape before training. Avoiding missing d
 
 <details>
     <summary>
+    Engineering checkpoint 1: Why is a working model.pt insufficient evidence that an experiment is reproducible?
+The model is already done and ready to be used but other users couldn't know the parameters used in order to train it.      
+</summary>
+</details>
+
+
+
+<details>
+    <summary>
     Engineering Checkpoint 2: Does random_state=42 guarantee bit-for-bit identical results on every CPU/GPU/software stack?
     No because each stack have different levels of precision, so there might be a minor numerical difference at the least significant bit. 
+</summary>
+</details>
+
+<details>
+    <summary>
+    Engineering Checkpoint 3: 
+    In one sentence each, state what the Git remote stores, what the DVC remote stores, and whether git push transfers the DVC-managed raw images>
+    Git remote stores: source code, params.yaml,pyproject.toml, uv.lock and .dvc metadata pointers
+    DVC remote stores: Large model artefacts,large generated files, DVC-managed dataset content
+    Git push doesn't push the whole dataset in the repository, instead it pushes the metadata required to pull the dataset from dvc
+
 </summary>
 </details>
