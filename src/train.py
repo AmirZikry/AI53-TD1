@@ -167,7 +167,12 @@ def main() -> None:
         # -----------------------------------------------------
         # run_manifest = ...
         # training_identity = ...
-        run_manifest=write_run_manifest(params,device,run_name,train_manifest_path)
+        run_manifest = write_run_manifest(
+        params,
+        str(device),
+        run.info.run_id,
+        Path("reports/run_manifest.json")
+        )   
         training_data_identity=run_manifest["data"]
         # -----------------------------------------------------
         # TODO 2 - LOG RUN PARAMETERS
@@ -177,27 +182,29 @@ def main() -> None:
         # random_state, augmentation_enabled, horizontal_flip,
         # rotation_degrees, device, training_data_identity.
         # -----------------------------------------------------
-        settings=run_manifest["settings"]
-        aug=run_manifest["augmentation"]
+        execution = run_manifest["execution"]
+        config = run_manifest["configuration"]
+        aug = config["augmentation"]
+        data_identity = run_manifest["data"]["training_data_identity"]
         mlflow.log_params(
             {
-                "image_size": settings["image_size"],
-                "batch_size": settings["batch_size"],
-                "epochs": settings["epochs"],
-                "learning_rate": settings["learning_rate"],
-                "dropout": settings["dropout"],
-                "random_state": settings["random_state"],
+                "image_size": config["image_size"],
+                "batch_size": config["batch_size"],
+                "epochs": config["epochs"],
+                "learning_rate": config["learning_rate"],
+                "dropout": config["dropout"],
+                "random_state": execution["random_state"],
                 "augmentation_enabled": aug["enabled"],
                 "horizontal_flip": aug["horizontal_flip"],
                 "rotation_degrees": aug["rotation_degrees"],
-                "device": settings["device"],
-                "training_data_identity": training_data_identity,
+                "device": execution["device"],
+                "training_data_identity": data_identity,
             }
         )
         # -----------------------------------------------------
         # TODO 3 - LOG TRAINING DATASET INPUT
         # -----------------------------------------------------
-        train_manifest_df = pd.read_csv(train_manifest_path)
+        train_manifest_df = pd.read_csv("data/processed/manifests/train.csv")
         if "label" not in train_manifest_df.columns:
             raise ValueError("Training manifest must contain a 'label' column")
 
@@ -337,7 +344,7 @@ def main() -> None:
             output_example = cpu_model(torch.from_numpy(input_example)).detach().cpu().numpy()
 
         signature = infer_signature(input_example, output_example)
-        image_size = int(settings["image_size"])
+        image_size = int(config["image_size"])
 
         mlflow.pytorch.log_model(
             pytorch_model=cpu_model,
