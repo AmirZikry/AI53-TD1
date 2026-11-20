@@ -99,3 +99,28 @@ DVC: Records cryptographic hashes of the raw and processed datasets, stage depen
 MLflow: Records per-run execution telemetry—including hyperparameters, dataset inputs, epoch-by-epoch metrics, training duration, provenance artifacts, and the serialized model binary with its signature—in an experiment tracking store.
 </summary>
 </details>
+
+<details>
+    <summary>
+| Change | VALIDATE | PREPARE | TRAIN | EVALUATE |
+| :--- | :--- | :--- | :--- | :--- |
+| Change `train.learning_rate` | REUSED | REUSED | RERUN | REUSED |
+| Change `data.image_size` | REUSED | RERUN | RERUN | NEEDS UPDATE |
+| Edit `src/validate_data.py`; the quality report stays the same | RERUN | REUSED | REUSED | REUSED |
+| Edit only `README.md` | REUSED | REUSED | REUSED | REUSED |
+
+Change train.learning_rate
+VALIDATE & PREPARE (REUSED): Neither stage lists train.learning_rate in its params: or deps:, so their inputs are unchanged.   
+TRAIN (RERUN): Lists train.learning_rate under params:, so DVC detects a parameter change and reruns training.  
+EVALUATE (REUSED): Does not depend on train or train.learning_rate, and selection.run_id remains fixed to the previously selected MLflow Run. 
+
+Edit src/validate_data.py;
+VALIDATE (RERUN): src/validate_data.py is in validate's deps:, so DVC reruns validate.   
+PREPARE, TRAIN, EVALUATE (REUSED): Because reports/data_quality.json is deterministic and its content does not change after validate finishes, prepare's input dependency (reports/data_quality.json) is unchanged, so DVC skips all downstream stages.  
+
+RUN A: 8fa943ff6c17a3c874d2b152e9d7980602a5cd50c0d8156625bd00590a3d8c6c
+Running it again without changes skips every stage.
+Running it after adding a comment reruns validate and reuse the else 
+
+</summary>
+</details>
