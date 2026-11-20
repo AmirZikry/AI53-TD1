@@ -78,3 +78,15 @@ The model is already done and ready to be used but other users couldn't know the
 
 </summary>
 </details>
+
+<details>
+    <summary>
+    4.2 
+    1) Yes, validate runs first for quality check, if it fails, prepare will not run
+    2) Yes, directly reads and processes the raw image files from data/raw
+    3) data.image_size, all the items under train, augmentation, compute, tracking sections
+    4) evaluate does not depend on the train stage directly; instead, it fetches a specific candidate model from MLflow using the Run ID stored in selection.run_id. Tracking selection.run_id in params: ensures DVC knows the current test outputs are stale and automatically reruns evaluate whenever you select a different MLflow Run ID
+    5) reports/test_metrics.json
+
+</summary>
+</details>
