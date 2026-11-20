@@ -131,3 +131,18 @@ RUN B: 3bc9fee5a81f45ccbb66038acb05fda2
 | **4. Change `data.image_size`** | `Stage 'validate' didn't change, skipping` / `Running stage 'prepare': > uv run --locked python -m src.prepare` / `Running stage 'train': > uv run --locked python -m src.train` | REUSED | RERUN | RERUN | NOT RUN |
 </summary>
 </details>
+
+<details>
+    <summary>
+Setting augmentation.enabled: true isolates the effect of random data augmentations -> Slightly higher train_loss
+
+| Run | Controlled change | Val. Accuracy | Val. Macro-F1 | Training time | MLflow Run ID |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **A** | Baseline (`lr=0.001`, `augmentation.enabled=false`, `dropout=0.30`, `batch_size=32`) | `0.6390977443609023` | `0.625419004269433` | `9.853514299960807s` | `444e84db7f354cb68951427e02bf946c` |
+| **B** | Change `train.learning_rate` (`0.001` → `0.003`) | `0.6917293233082706` | `0.6772352509225436` | `12.910993000026792s` | `3bc9fee5a81f45ccbb66038acb05fda2` |
+| **C** | Reset `lr=0.001`; enable data augmentation (`augmentation.enabled: false` → `true`) | `0.6541353383458647` | `0.6416042962918432` | `13.444834900088608s` | `13260c249a9542999306031609e6368f` |
+
+Engineering Checkpoint 6
+Primary metric: val_macro_f1 because it computes the harmonic mean of precision and recall separately for each class and averages them unweighted
+</summary>
+</details>
