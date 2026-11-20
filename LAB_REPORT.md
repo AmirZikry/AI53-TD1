@@ -118,9 +118,16 @@ Edit src/validate_data.py;
 VALIDATE (RERUN): src/validate_data.py is in validate's deps:, so DVC reruns validate.   
 PREPARE, TRAIN, EVALUATE (REUSED): Because reports/data_quality.json is deterministic and its content does not change after validate finishes, prepare's input dependency (reports/data_quality.json) is unchanged, so DVC skips all downstream stages.  
 
-RUN A: 8fa943ff6c17a3c874d2b152e9d7980602a5cd50c0d8156625bd00590a3d8c6c
+RUN A: 444e84db7f354cb68951427e02bf946c
 Running it again without changes skips every stage.
 Running it after adding a comment reruns validate and reuse the else 
+RUN B: 3bc9fee5a81f45ccbb66038acb05fda2
 
+| Check | Relevant Terminal Lines | VALIDATE | PREPARE | TRAIN | EVALUATE |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **1. Run again without changing anything** | `Stage 'validate' didn't change, skipping` / `Stage 'prepare' didn't change, skipping` / `Stage 'train' didn't change, skipping` / `Data and pipelines are up to date.` | REUSED | REUSED | REUSED | NOT RUN |
+| **2. Add a comment to `src/validate_data.py` (report unchanged)** | `Running stage 'validate': > uv run --locked python -m src.validate_data` / `Stage 'prepare' didn't change, skipping` / `Stage 'train' didn't change, skipping` | RERUN | REUSED | REUSED | NOT RUN |
+| **3. Change `train.learning_rate` (or Run B param)** | `Stage 'validate' didn't change, skipping` / `Stage 'prepare' didn't change, skipping` / `Running stage 'train': > uv run --locked python -m src.train` | REUSED | REUSED | RERUN | NOT RUN |
+| **4. Change `data.image_size`** | `Stage 'validate' didn't change, skipping` / `Running stage 'prepare': > uv run --locked python -m src.prepare` / `Running stage 'train': > uv run --locked python -m src.train` | REUSED | RERUN | RERUN | NOT RUN |
 </summary>
 </details>
