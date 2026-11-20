@@ -90,3 +90,12 @@ The model is already done and ready to be used but other users couldn't know the
 
 </summary>
 </details>
+
+<details>
+    <summary>
+Engineering Checkpoint 4
+Git: Records the exact versioned source code, pipeline definitions (dvc.yaml), and configuration settings (params.yaml) used for the run
+DVC: Records cryptographic hashes of the raw and processed datasets, stage dependencies, and output artifacts (dvc.lock) to track data lineage and verify pipeline reproducibility.
+MLflow: Records per-run execution telemetry—including hyperparameters, dataset inputs, epoch-by-epoch metrics, training duration, provenance artifacts, and the serialized model binary with its signature—in an experiment tracking store.
+</summary>
+</details>

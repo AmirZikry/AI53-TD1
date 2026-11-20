@@ -4,6 +4,11 @@ import hashlib
 import json
 from pathlib import Path
 
+import importlib.metadata
+import platform
+import subprocess
+import torch
+
 
 def training_data_identity(
     train_manifest: Path = Path("data/processed/manifests/train.csv"),
@@ -27,6 +32,31 @@ def training_data_identity(
         digest.update(b"\0")
     return digest.hexdigest()
 
+def _get_git_info() -> tuple[str, bool]:
+    """Return (commit_sha, is_dirty) from Git, with safe fallbacks."""
+    try:
+        commit_sha = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL, text=True
+        ).strip()
+    except Exception:
+        commit_sha = "unknown"
+
+    try:
+        status_out = subprocess.check_output(
+            ["git", "status", "--porcelain"], stderr=subprocess.DEVNULL, text=True
+        ).strip()
+        is_dirty = bool(status_out)
+    except Exception:
+        is_dirty = False
+
+    return commit_sha, is_dirty
+
+
+def _package_version(name: str) -> str:
+    try:
+        return importlib.metadata.version(name)
+    except importlib.metadata.PackageNotFoundError:
+        return "not-installed"
 
 def build_run_manifest(params: dict, device: str, mlflow_run_id: str) -> dict:
     """Build experiment provenance metadata.
@@ -42,7 +72,48 @@ def build_run_manifest(params: dict, device: str, mlflow_run_id: str) -> dict:
     Hints: subprocess, platform, importlib.metadata, torch,
     training_data_identity().
     """
-    raise NotImplementedError("Implement run provenance capture")
+    commit_sha, is_dirty = _get_git_info()
+    data_identity = training_data_identity()
+
+    data_cfg = params.get("data", {})
+    train_cfg = params.get("train", {})
+    aug_cfg = params.get("augmentation", {})
+
+    return {
+        "git": {
+            "commit_sha": commit_sha,
+            "dirty": is_dirty,
+        },
+        "data": {
+            "training_data_identity": data_identity,
+        },
+        "environment": {
+            "platform": platform.platform(),
+            "python": platform.python_version(),
+            "torch": _package_version("torch"),
+            "torchvision": _package_version("torchvision"),
+            "dvc": _package_version("dvc"),
+            "mlflow": _package_version("mlflow"),
+            "cuda_runtime": torch.version.cuda if torch.cuda.is_available() else None,
+        },
+        "execution": {
+            "mlflow_run_id": mlflow_run_id,
+            "device": device,
+            "random_state": train_cfg.get("random_state"),
+        },
+        "configuration": {
+            "image_size": data_cfg.get("image_size"),
+            "batch_size": train_cfg.get("batch_size"),
+            "epochs": train_cfg.get("epochs"),
+            "learning_rate": train_cfg.get("learning_rate"),
+            "dropout": train_cfg.get("dropout"),
+            "augmentation": {
+                "enabled": aug_cfg.get("enabled"),
+                "horizontal_flip": aug_cfg.get("horizontal_flip"),
+                "rotation_degrees": aug_cfg.get("rotation_degrees"),
+            },
+        },
+    }
 
 
 def write_run_manifest(params: dict, device: str, mlflow_run_id: str, path: Path) -> dict:
